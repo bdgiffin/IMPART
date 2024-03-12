@@ -17,6 +17,9 @@ public:
     Em = 0.0;
     Et = 0.0;
 
+    // compute the sound speed
+    c = sqrt(kappa/rho);
+
   } // initialize()
 
   void initializeState(MaterialPoint& integrationPoint, std::vector<Node>& elementNodes) {
@@ -34,6 +37,9 @@ public:
     for (uint a = 0; a < elementNodes.size(); a++) {
       elementNodes[a].mass += integrationPoint.mass * integrationPoint.shapeFunctionValues[a];
     } // for a = ...
+
+    // initialize max temperature
+    integrationPoint.maxTemperature = 0.0;
 
   } // initializeState()
 
@@ -57,6 +63,9 @@ public:
 
     // ============================================================================ //
 
+    // update the maximum temperature
+    if (T > integrationPoint.maxTemperature) integrationPoint.maxTemperature = T;
+
     // define the fiber stretch tensor: Fm = Fm0 * fiber (x) fiber + Fm1 * (I - fiber) (x) (I - fiber)
     float Fm0 = exp(Em); // normal stretch
     float Fm1 = exp(Et); // transverse stretch
@@ -76,7 +85,9 @@ public:
     float idetF = 1.0 / detF;
 
     // compute volumetric strain rate
-    float dvol = log(detF / integrationPoint.relativeVolume) / dt;
+    float idt = 0.0;
+    if (dt > 0.0) idt = 1.0 / dt;
+    float dvol = log(detF / integrationPoint.relativeVolume) * idt;
 
     // compute bulk viscosity pressure
     float viscosity = 10.0;
@@ -99,7 +110,7 @@ public:
     B12 *= GdivJ;
     
     // compute the pressure and the Kirchhoff stress, including thermal strain and bulk viscosity
-    float p = - kappa * (detF * (detF - 1.0) - dVdT * T);
+    float p = - kappa * (detF * (detF - 1.0) - dVdT * integrationPoint.maxTemperature);
     B11 -= p + q;
     B22 -= p + q;
 
@@ -153,6 +164,7 @@ public:
   float nu;       // Poisson's ratio
   float G;        // shear modulus
   float kappa;    // bulk modulus
+  float c;        // sound speed
   float dVdT;     // coefficient of thermal expansion
   float alpha;    // thermal diffusivity = k / (c * rho)
   float Em;       // axial muscle strain

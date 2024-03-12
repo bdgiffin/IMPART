@@ -10,6 +10,7 @@ public:
   float stress[3];
   float relativeVolume;
   float flux[2];
+  float maxTemperature;
   float mass;
   float integrationWeight;
   std::vector<float>    shapeFunctionValues;

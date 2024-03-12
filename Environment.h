@@ -26,6 +26,9 @@ public:
       boundaries[b]->initialize();
     } // for b = ...
 
+    // initialize nodal constraint
+    nodalConstraint.initialize();
+
   } // initialize()
 
   void timeIntegrate(float dt) {
@@ -46,7 +49,8 @@ public:
     } // for b = ...
 
   } // timeIntegrate()
-  
+
+  NodalConstraint         nodalConstraint;
   std::vector<BodyForce*> bodyForces;
   std::vector<Damping*>   dampingForces;
   std::vector<Boundary*>  boundaries;

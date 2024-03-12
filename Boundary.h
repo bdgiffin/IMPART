@@ -41,15 +41,43 @@ public:
       }
       
       // conduct heat
-      float tgap = temperature - node.temperature;
-      node.temperature += tgap * 0.00001;
+      float tgap = node.temperature - temperature;
+      node.heating += - conductivity * tgap;
     } // if (gap < 0.0)
   } // enforce
+
+  void enforce_penalty(Node& node, float dt) {
+    float gap = (node.position[0] - basePoint[0]) * normal[0]
+              + (node.position[1] - basePoint[1]) * normal[1];
+    if (gap < 0.0) {
+      float vgap = node.velocity[0] * normal[0] 
+                 + node.velocity[1] * normal[1];
+      // enforce contact by applying a penalty force
+      float penalty_force = - penalty_stiffness * gap - damping_viscosity * vgap;
+      node.force[0] += penalty_force * normal[0];
+      node.force[1] += penalty_force * normal[1];
+      float hgap = node.velocity[0] * normal[1] 
+                 - node.velocity[1] * normal[0];
+      float slip_force = penalty_stiffness * hgap;
+      if (abs(slip_force) > mu * penalty_force) {
+	slip_force = (mu * penalty_force) * slip_force / abs(slip_force);
+      }
+      node.force[0] -= slip_force * normal[1];
+      node.force[1] += slip_force * normal[0];
+      
+      // conduct heat
+      float tgap = node.temperature - temperature;
+      node.heating += - conductivity * tgap;
+    } // if (gap < 0.0)
+  } // enforce_penalty
 
   float basePoint[2];
   float normal[2];
   float temperature;
   float mu; // coefficient of friction
+  float penalty_stiffness; // contact penalty stiffness
+  float damping_viscosity; // contact damping viscosity
+  float conductivity; // thermal conductivity
 }; // Boundary
 
 #endif // BOUNDARY_H

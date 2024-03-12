@@ -2,6 +2,7 @@
 #define SOLID_H
 
 #include<vector>
+#include<limits>
 #include "BodyForce.h"
 #include "Damping.h"
 #include "Boundary.h"
@@ -49,12 +50,15 @@ public:
     
   } // initialize()
 
-  void computeInternalForces(float dt) {
+  float computeInternalForces(float dt) {
 
     // zero out all nodal forces
     for (uint a = 0; a < nodes.size(); a++) {
       nodes[a].zeroForces();
     } // for a = ...
+
+    // set the shortest dimension
+    float Lcrit = std::numeric_limits<float>::max();
     
     // loop over all elements
     for (uint e = 0; e < elements.size(); e++) {
@@ -71,7 +75,7 @@ public:
       for (uint i = 0; i < elements[e]->integrationPoints.size(); i++) {
 	material.updateState(elements[e]->integrationPoints[i],elementNodes,dt);
 	// check for element inversion, and optionally delete inverted element
-	if (elements[e]->integrationPoints[i].relativeVolume < 1.0e-1) {
+	if (elements[e]->integrationPoints[i].relativeVolume < 1.0e-4) {
 	  elements[e]->active = false;
 	} // if (J < tol)
       } // for i = ...
@@ -81,9 +85,14 @@ public:
 	for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	  nodes[elements[e]->nodeIDs[a]].sumForces(elementNodes[a]);
 	} // for a = ...
+	float Le = elements[e]->shortest_dimension(elementNodes);
+	if (Le < Lcrit) Lcrit = Le;
       }
 
     } // for e = ...
+
+    // return the critical stable time step
+    return 1.0 * Lcrit / material.c;
 
   } // computeInternalForces()
 

@@ -11,6 +11,8 @@ public:
 
   virtual void initialize(std::vector<Node>& elementNodes) = 0;
 
+  virtual float shortest_dimension(std::vector<Node>& elementNodes) = 0;
+
   bool active = true;
   std::vector<int> nodeIDs;
   std::vector<MaterialPoint> integrationPoints;
@@ -71,6 +73,26 @@ public:
     } // q = ...
 
   } // initialize()
+
+  virtual float shortest_dimension(std::vector<Node>& elementNodes) {
+    // compute the volume of the element
+    float diag13x = elementNodes[2].position[0] - elementNodes[0].position[0];
+    float diag13y = elementNodes[2].position[1] - elementNodes[0].position[1];
+    float diag24x = elementNodes[3].position[0] - elementNodes[1].position[0];
+    float diag24y = elementNodes[3].position[1] - elementNodes[1].position[1];
+    float volume = diag13x*diag24y - diag13y*diag24x;
+
+    // compute the length of each diagonal
+    float diag13r = sqrt(diag13x*diag13x + diag13y*diag13y);
+    float diag24r = sqrt(diag24x*diag24x + diag24y*diag24y);
+
+    // return the shortest dimension
+    if (diag13r > diag24r) {
+      return volume / diag13r;
+    } else {
+      return volume / diag24r;
+    }
+  } // shortest_dimension
 
 }; // Quadrilateral
 

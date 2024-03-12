@@ -2,10 +2,14 @@
 #define OBJECTS_H
 
 #include<vector>
+#include<limits>
 #include "BodyForce.h"
 #include "Damping.h"
 #include "Particle.h"
 #include "Solid.h"
+#include "RigidBody.h"
+#include "Contact.h"
+#include "Fluid.h"
 
 class Objects {
 public:
@@ -22,6 +26,14 @@ public:
       solids[s].initialize();
     } // for s = ...
 
+    // initialize all rigid bodies
+    for (uint r = 0; r < rigid_bodies.size(); r++) {
+      rigid_bodies[r].initialize();
+    } // for r = ...
+
+    // initialize the fluid
+    fluid.initialize();
+
   } // initialize()
 
   void timeIntegrate(float dt) {
@@ -36,16 +48,48 @@ public:
       solids[s].timeIntegrate(dt);
     } // for s = ...
 
+    // timeIntegrate all rigid bodies
+    for (uint r = 0; r < rigid_bodies.size(); r++) {
+      rigid_bodies[r].timeIntegrate(dt);
+    } // for r = ...
+
+    // timeIntegrate the fluid
+    fluid.timeIntegrate(dt);
+    
   } // timeIntegrate()
 
-  void computeInternalForces(float dt) {
+  float computeInternalForces(float dt) {
 
-    // compute internal forces all solids
+    // set the critical stable time step
+    float dtcrit = std::numeric_limits<float>::max();
+
+    // compute internal (thermal-mechanical) forces all solids
     for (uint s = 0; s < solids.size(); s++) {
-      solids[s].computeInternalForces(dt);
+      float dts = solids[s].computeInternalForces(dt);
+      if (dts < dtcrit) dtcrit = dts;
     } // for s = ...
 
+    // compute internal (thermal) forces all rigid bodies
+    for (uint r = 0; r < rigid_bodies.size(); r++) {
+      rigid_bodies[r].computeInternalForces(dt);
+    } // for r = ...
+
+    // compute internal forces for the fluid
+    fluid.computeInternalForces(dt);
+
+    // return the limiting stable time step
+    return dtcrit;
+
   } // computeInternalForces()
+
+  void applyNodalConstraint(NodalConstraint& nodalConstraint, float dt) {
+
+    // apply to all rigid bodies
+    for (uint r = 0; r < rigid_bodies.size(); r++) {
+      rigid_bodies[r].applyNodalConstraint(nodalConstraint,dt);
+    } // for r = ...
+
+  } // applyNodalConstraint()
 
   void applyBodyForce(BodyForce* bodyForce) {
 
@@ -53,6 +97,11 @@ public:
     for (uint s = 0; s < solids.size(); s++) {
       solids[s].applyBodyForce(bodyForce);
     } // for s = ...
+
+    // apply body force to all rigid bodies
+    for (uint r = 0; r < rigid_bodies.size(); r++) {
+      rigid_bodies[r].applyBodyForce(bodyForce);
+    } // for r = ...
 
   } // applyBodyForce()
 
@@ -62,6 +111,11 @@ public:
     for (uint s = 0; s < solids.size(); s++) {
       solids[s].applyDamping(damping,dt);
     } // for s = ...
+
+    // apply damping to all rigid bodies
+    for (uint r = 0; r < rigid_bodies.size(); r++) {
+      rigid_bodies[r].applyDamping(damping,dt);
+    } // for r = ...
 
   } // applyDamping()
 
@@ -74,6 +128,26 @@ public:
 
   } // applyBoundaryCondition()
 
+  void applyPenaltyBoundaryCondition(Boundary* boundary, float dt) {
+
+    // apply boundary condition to all rigid bodies
+    for (uint r = 0; r < rigid_bodies.size(); r++) {
+      rigid_bodies[r].applyPenaltyBoundaryCondition(boundary,dt);
+    } // for r = ...
+
+  } // applyPenaltyBoundaryCondition()
+
+  void applyContactForces(float dt) {
+
+    // enforce solid node-to-surface contact
+    for (uint c = 0; c < contact_surfaces.size(); c++) {
+      for (uint s = 0; s < solids.size(); s++) {
+	contact_surfaces[c].enforce_penalty(solids[s].nodes,dt);
+      } // for s = ...
+    } // for c = ...
+
+  } // applyContact()
+
   // fluid particles
   float radius;
   float mass;
@@ -81,6 +155,15 @@ public:
 
   // solid objects
   std::vector<Solid> solids;
+
+  // rigid bodies
+  std::vector<RigidBody> rigid_bodies;
+
+  // contact surfaces
+  std::vector<Contact> contact_surfaces;
+
+  // fluid
+  Fluid fluid;
 }; // Objects
 
 #endif // OBJECTS_H
