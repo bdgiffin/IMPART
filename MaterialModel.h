@@ -34,7 +34,7 @@ public:
 
     // accumulate nodal masses
     integrationPoint.mass = rho * integrationPoint.integrationWeight;
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       elementNodes[a].mass += integrationPoint.mass * integrationPoint.shapeFunctionValues[a];
     } // for a = ...
 
@@ -47,7 +47,7 @@ public:
 
     // compute the mechanical deformation gradient Fe = dx/dX
     float Fe[2][2] = { { 0.0, 0.0 }, { 0.0, 0.0 } };
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       for (int i = 0; i < 2; i++) {
 	for (int j = 0; j < 2; j++) {
 	  Fe[i][j] += elementNodes[a].position[i] * integrationPoint.shapeFunctionGradients[a][j];
@@ -57,7 +57,7 @@ public:
 
     // interpolate the temperature
     float T = 0.0;
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       T += elementNodes[a].temperature * integrationPoint.shapeFunctionValues[a];
     } // a = ...
 
@@ -131,7 +131,7 @@ public:
     // compute the heat flux vector
     integrationPoint.flux[0] = 0.0;
     integrationPoint.flux[1] = 0.0;
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       for (int i = 0; i < 2; i++) {
 	integrationPoint.flux[i] -= alpha * elementNodes[a].temperature * integrationPoint.shapeFunctionGradients[a][i];
       } // i = ...
@@ -140,7 +140,7 @@ public:
     // ============================================================================ //
 
     // sum the nodal force contributions
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       for (int i = 0; i < 2; i++) {
 	for (int j = 0; j < 2; j++) {
 	  elementNodes[a].force[i] -= P[i][j] * integrationPoint.shapeFunctionGradients[a][j] * integrationPoint.integrationWeight;
@@ -149,7 +149,7 @@ public:
     } // a = ...
 
     // sum the heat flux divergence contributions
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       for (int i = 0; i < 2; i++) {
 	elementNodes[a].heating += integrationPoint.flux[i] * integrationPoint.shapeFunctionGradients[a][i] * integrationPoint.integrationWeight;
       } // i = ...

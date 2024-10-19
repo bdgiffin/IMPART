@@ -33,12 +33,12 @@ public:
     environment.timeIntegrate(dt);
 
     // apply external body forces to all objects
-    for (uint i = 0; i < environment.bodyForces.size(); i++) {
+    for (int i = 0; i < environment.bodyForces.size(); i++) {
       objects.applyBodyForce(environment.bodyForces[i]);
     } // i = ...
 
     // apply penalty-enforced boundary conditions
-    for (uint i = 0; i < environment.boundaries.size(); i++) {
+    for (int i = 0; i < environment.boundaries.size(); i++) {
       objects.applyPenaltyBoundaryCondition(environment.boundaries[i],dt);
     } // i = ...
 
@@ -52,13 +52,13 @@ public:
     objects.timeIntegrate(dt);
 
     // apply damping to all objects
-    for (uint i = 0; i < environment.dampingForces.size(); i++) {
+    for (int i = 0; i < environment.dampingForces.size(); i++) {
       objects.applyDamping(environment.dampingForces[i],dt);
     } // i = ...
 
     // apply boundary conditions and enforce contact
     // apply external body forces to all objects
-    for (uint i = 0; i < environment.boundaries.size(); i++) {
+    for (int i = 0; i < environment.boundaries.size(); i++) {
       objects.applyBoundaryCondition(environment.boundaries[i],dt);
     } // i = ...
 

@@ -17,17 +17,17 @@ public:
   void initialize() {
 
     // initialize all particles
-    for (uint p = 0; p < particles.size(); p++) {
+    for (int p = 0; p < particles.size(); p++) {
       particles[p].initialize();
     } // for p = ...
 
     // initialize all solids
-    for (uint s = 0; s < solids.size(); s++) {
+    for (int s = 0; s < solids.size(); s++) {
       solids[s].initialize();
     } // for s = ...
 
     // initialize all rigid bodies
-    for (uint r = 0; r < rigid_bodies.size(); r++) {
+    for (int r = 0; r < rigid_bodies.size(); r++) {
       rigid_bodies[r].initialize();
     } // for r = ...
 
@@ -39,17 +39,17 @@ public:
   void timeIntegrate(float dt) {
 
     // timeIntegrate all particles
-    for (uint p = 0; p < particles.size(); p++) {
+    for (int p = 0; p < particles.size(); p++) {
       particles[p].timeIntegrate(dt);
     } // for p = ...
 
     // timeIntegrate all solids
-    for (uint s = 0; s < solids.size(); s++) {
+    for (int s = 0; s < solids.size(); s++) {
       solids[s].timeIntegrate(dt);
     } // for s = ...
 
     // timeIntegrate all rigid bodies
-    for (uint r = 0; r < rigid_bodies.size(); r++) {
+    for (int r = 0; r < rigid_bodies.size(); r++) {
       rigid_bodies[r].timeIntegrate(dt);
     } // for r = ...
 
@@ -64,13 +64,13 @@ public:
     float dtcrit = std::numeric_limits<float>::max();
 
     // compute internal (thermal-mechanical) forces all solids
-    for (uint s = 0; s < solids.size(); s++) {
+    for (int s = 0; s < solids.size(); s++) {
       float dts = solids[s].computeInternalForces(dt);
       if (dts < dtcrit) dtcrit = dts;
     } // for s = ...
 
     // compute internal (thermal) forces all rigid bodies
-    for (uint r = 0; r < rigid_bodies.size(); r++) {
+    for (int r = 0; r < rigid_bodies.size(); r++) {
       rigid_bodies[r].computeInternalForces(dt);
     } // for r = ...
 
@@ -85,7 +85,7 @@ public:
   void applyNodalConstraint(NodalConstraint& nodalConstraint, float dt) {
 
     // apply to all rigid bodies
-    for (uint r = 0; r < rigid_bodies.size(); r++) {
+    for (int r = 0; r < rigid_bodies.size(); r++) {
       rigid_bodies[r].applyNodalConstraint(nodalConstraint,dt);
     } // for r = ...
 
@@ -94,12 +94,12 @@ public:
   void applyBodyForce(BodyForce* bodyForce) {
 
     // apply body force to all solids
-    for (uint s = 0; s < solids.size(); s++) {
+    for (int s = 0; s < solids.size(); s++) {
       solids[s].applyBodyForce(bodyForce);
     } // for s = ...
 
     // apply body force to all rigid bodies
-    for (uint r = 0; r < rigid_bodies.size(); r++) {
+    for (int r = 0; r < rigid_bodies.size(); r++) {
       rigid_bodies[r].applyBodyForce(bodyForce);
     } // for r = ...
 
@@ -108,12 +108,12 @@ public:
   void applyDamping(Damping* damping, float dt) {
 
     // apply damping to all solids
-    for (uint s = 0; s < solids.size(); s++) {
+    for (int s = 0; s < solids.size(); s++) {
       solids[s].applyDamping(damping,dt);
     } // for s = ...
 
     // apply damping to all rigid bodies
-    for (uint r = 0; r < rigid_bodies.size(); r++) {
+    for (int r = 0; r < rigid_bodies.size(); r++) {
       rigid_bodies[r].applyDamping(damping,dt);
     } // for r = ...
 
@@ -122,7 +122,7 @@ public:
   void applyBoundaryCondition(Boundary* boundary, float dt) {
 
     // apply boundary condition to all solids
-    for (uint s = 0; s < solids.size(); s++) {
+    for (int s = 0; s < solids.size(); s++) {
       solids[s].applyBoundaryCondition(boundary,dt);
     } // for s = ...
 
@@ -131,7 +131,7 @@ public:
   void applyPenaltyBoundaryCondition(Boundary* boundary, float dt) {
 
     // apply boundary condition to all rigid bodies
-    for (uint r = 0; r < rigid_bodies.size(); r++) {
+    for (int r = 0; r < rigid_bodies.size(); r++) {
       rigid_bodies[r].applyPenaltyBoundaryCondition(boundary,dt);
     } // for r = ...
 
@@ -140,8 +140,8 @@ public:
   void applyContactForces(float dt) {
 
     // enforce solid node-to-surface contact
-    for (uint c = 0; c < contact_surfaces.size(); c++) {
-      for (uint s = 0; s < solids.size(); s++) {
+    for (int c = 0; c < contact_surfaces.size(); c++) {
+      for (int s = 0; s < solids.size(); s++) {
 	contact_surfaces[c].enforce_penalty(solids[s].nodes,dt);
       } // for s = ...
     } // for c = ...

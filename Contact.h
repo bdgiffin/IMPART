@@ -17,7 +17,7 @@ public:
     // proximity search to find the index of the surface node closest to the input node
     int nearest = 0;
     float min_distance = std::numeric_limits<float>::max();
-    for (uint i = 0; i < surface.size(); i++) {
+    for (int i = 0; i < surface.size(); i++) {
       float dx = node.position[0] - surface[i]->position[0];
       float dy = node.position[1] - surface[i]->position[1];
       float distance = sqrt(dx*dx + dy*dy);

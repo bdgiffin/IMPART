@@ -23,7 +23,7 @@ public:
 
   virtual void initialize(std::vector<Node>& elementNodes) {
     // declare const data for all quadrilateral elements
-    constexpr float gaussPoint = 1.0 / sqrt(3.0);
+    const float gaussPoint = 1.0 / sqrt(3.0);
     const float XA[4] = { -1.0, +1.0, +1.0, -1.0 };
     const float YA[4] = { -1.0, -1.0, +1.0, +1.0 };
     const float XQ[4] = { -gaussPoint, +gaussPoint, +gaussPoint, -gaussPoint };

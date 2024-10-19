@@ -27,7 +27,7 @@ public:
 
     // accumulate nodal masses
     integrationPoint.mass = rho * integrationPoint.integrationWeight;
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       elementNodes[a].mass += integrationPoint.mass * integrationPoint.shapeFunctionValues[a];
     } // for a = ...
 
@@ -40,7 +40,7 @@ public:
 
     // interpolate the temperature
     float T = 0.0;
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       T += elementNodes[a].temperature * integrationPoint.shapeFunctionValues[a];
     } // a = ...
 
@@ -49,7 +49,7 @@ public:
     // compute the heat flux vector
     integrationPoint.flux[0] = 0.0;
     integrationPoint.flux[1] = 0.0;
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       for (int i = 0; i < 2; i++) {
 	integrationPoint.flux[i] -= alpha * elementNodes[a].temperature * integrationPoint.shapeFunctionGradients[a][i];
       } // i = ...
@@ -58,7 +58,7 @@ public:
     // ============================================================================ //
 
     // sum the heat flux divergence contributions
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       for (int i = 0; i < 2; i++) {
 	elementNodes[a].heating += integrationPoint.flux[i] * integrationPoint.shapeFunctionGradients[a][i] * integrationPoint.integrationWeight;
       } // i = ...

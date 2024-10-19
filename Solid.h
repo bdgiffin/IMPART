@@ -19,16 +19,16 @@ public:
     material.initialize();
 
     // initialize all nodes
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       nodes[a].initialize();
     } // for a = ...
     
     // initialize all elements
-    for (uint e = 0; e < elements.size(); e++) {
+    for (int e = 0; e < elements.size(); e++) {
 
       // gather local node data for the current element
       std::vector<Node> elementNodes;
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	elementNodes.push_back(nodes[elements[e]->nodeIDs[a]]);
       } // for a = ...
 
@@ -37,12 +37,12 @@ public:
 
       // loop over all integration points, initialize the material state,
       // and simultaneously accumulate masses at each local element node
-      for (uint i = 0; i < elements[e]->integrationPoints.size(); i++) {
+      for (int i = 0; i < elements[e]->integrationPoints.size(); i++) {
 	material.initializeState(elements[e]->integrationPoints[i],elementNodes);
       } // for i = ...
 
       // scatter local mass contributions from the current element to the nodes 
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	nodes[elements[e]->nodeIDs[a]].sumMass(elementNodes[a]);
       } // for a = ...
 
@@ -53,7 +53,7 @@ public:
   float computeInternalForces(float dt) {
 
     // zero out all nodal forces
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       nodes[a].zeroForces();
     } // for a = ...
 
@@ -61,18 +61,18 @@ public:
     float Lcrit = std::numeric_limits<float>::max();
     
     // loop over all elements
-    for (uint e = 0; e < elements.size(); e++) {
+    for (int e = 0; e < elements.size(); e++) {
 
       // gather local node data for the current element
       std::vector<Node> elementNodes;
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	elementNodes.push_back(nodes[elements[e]->nodeIDs[a]]);
 	elementNodes[a].zeroForces();
       } // for a = ...
 
       // loop over all integration points, update the material state,
       // and simultaneously accumulate forces at each local element node
-      for (uint i = 0; i < elements[e]->integrationPoints.size(); i++) {
+      for (int i = 0; i < elements[e]->integrationPoints.size(); i++) {
 	material.updateState(elements[e]->integrationPoints[i],elementNodes,dt);
 	// check for element inversion, and optionally delete inverted element
 	if (elements[e]->integrationPoints[i].relativeVolume < 1.0e-4) {
@@ -82,7 +82,7 @@ public:
 
       // scatter local force contributions from the current element to the nodes
       if (elements[e]->active) {
-	for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+	for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	  nodes[elements[e]->nodeIDs[a]].sumForces(elementNodes[a]);
 	} // for a = ...
 	float Le = elements[e]->shortest_dimension(elementNodes);
@@ -99,7 +99,7 @@ public:
   void applyDamping(Damping* damping, float dt) {
     
     // apply damping to all nodes
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       damping->applyDamping(nodes[a], dt);
     } // for a = ...
 
@@ -108,23 +108,23 @@ public:
   void applyBodyForce(BodyForce* bodyForce) {
     
     // loop over all elements
-    for (uint e = 0; e < elements.size(); e++) {
+    for (int e = 0; e < elements.size(); e++) {
 
       // gather local node data for the current element
       std::vector<Node> elementNodes;
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	elementNodes.push_back(nodes[elements[e]->nodeIDs[a]]);
 	elementNodes[a].zeroForces();
       } // for a = ...
 
       // loop over all integration points, evaluate the local body force,
       // and accumulate forces at each local element node
-      for (uint i = 0; i < elements[e]->integrationPoints.size(); i++) {
+      for (int i = 0; i < elements[e]->integrationPoints.size(); i++) {
 	bodyForce->applyForce(elements[e]->integrationPoints[i],elementNodes);
       } // for i = ...
 
       // scatter local force contributions from the current element to the nodes 
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	nodes[elements[e]->nodeIDs[a]].sumForces(elementNodes[a]);
       } // for a = ...
 
@@ -135,7 +135,7 @@ public:
   void timeIntegrate(float dt) {
 
     // use a semi-implicit time-integrator to update the nodal positions
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       nodes[a].timeIntegrate(dt);
     } // for a = ...
 
@@ -144,7 +144,7 @@ public:
   void applyBoundaryCondition(Boundary* boundary, float dt) {
     
     // update the nodal positions to satisfy the imposed boundary condition
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       boundary->enforce(nodes[a], dt);
     } // for a = ...
 

@@ -20,16 +20,16 @@ public:
     material.initialize();
 
     // initialize all nodes
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       nodes[a].initialize();
     } // for a = ...
     
     // initialize all elements
-    for (uint e = 0; e < elements.size(); e++) {
+    for (int e = 0; e < elements.size(); e++) {
 
       // gather local node data for the current element
       std::vector<Node> elementNodes;
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	elementNodes.push_back(nodes[elements[e]->nodeIDs[a]]);
       } // for a = ...
 
@@ -38,12 +38,12 @@ public:
 
       // loop over all integration points, initialize the material state,
       // and simultaneously accumulate masses at each local element node
-      for (uint i = 0; i < elements[e]->integrationPoints.size(); i++) {
+      for (int i = 0; i < elements[e]->integrationPoints.size(); i++) {
 	material.initializeState(elements[e]->integrationPoints[i],elementNodes);
       } // for i = ...
 
       // scatter local mass contributions from the current element to the nodes 
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	nodes[elements[e]->nodeIDs[a]].sumMass(elementNodes[a]);
       } // for a = ...
 
@@ -87,7 +87,7 @@ public:
     torque   = 0.0;
 
     // zero out all nodal forces
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       nodes[a].zeroForces();
     } // for a = ...
 
@@ -95,24 +95,24 @@ public:
     // but heat conduction is still evolved on the finite element partition
     
     // loop over all elements
-    for (uint e = 0; e < elements.size(); e++) {
+    for (int e = 0; e < elements.size(); e++) {
 
       // gather local node data for the current element
       std::vector<Node> elementNodes;
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	elementNodes.push_back(nodes[elements[e]->nodeIDs[a]]);
 	elementNodes[a].zeroForces();
       } // for a = ...
 
       // loop over all integration points, update the material state,
       // and simultaneously accumulate forces at each local element node
-      for (uint i = 0; i < elements[e]->integrationPoints.size(); i++) {
+      for (int i = 0; i < elements[e]->integrationPoints.size(); i++) {
 	material.updateState(elements[e]->integrationPoints[i],elementNodes,dt);
       } // for i = ...
 
       // scatter local force contributions from the current element to the nodes
       if (elements[e]->active) {
-	for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+	for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	  nodes[elements[e]->nodeIDs[a]].sumForces(elementNodes[a]);
 	} // for a = ...
       }
@@ -125,7 +125,7 @@ public:
     // proximity search to find the index of the node closest to (x,y)
     int nearest = 0;
     float min_distance = std::numeric_limits<float>::max();
-    for (uint i = 0; i < nodes.size(); i++) {
+    for (int i = 0; i < nodes.size(); i++) {
       float dx = x[0] - nodes[i].position[0];
       float dy = x[1] - nodes[i].position[1];
       float distance = sqrt(dx*dx + dy*dy);
@@ -169,7 +169,7 @@ public:
   void applyDamping(Damping* damping, float dt) {
     
     // apply damping to all nodes
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       damping->applyDamping(nodes[a], dt);
     } // for a = ...
 
@@ -178,23 +178,23 @@ public:
   void applyBodyForce(BodyForce* bodyForce) {
     
     // loop over all elements
-    for (uint e = 0; e < elements.size(); e++) {
+    for (int e = 0; e < elements.size(); e++) {
 
       // gather local node data for the current element
       std::vector<Node> elementNodes;
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	elementNodes.push_back(nodes[elements[e]->nodeIDs[a]]);
 	elementNodes[a].zeroForces();
       } // for a = ...
 
       // loop over all integration points, evaluate the local body force,
       // and accumulate forces at each local element node
-      for (uint i = 0; i < elements[e]->integrationPoints.size(); i++) {
+      for (int i = 0; i < elements[e]->integrationPoints.size(); i++) {
 	bodyForce->applyForce(elements[e]->integrationPoints[i],elementNodes);
       } // for i = ...
 
       // scatter local force contributions from the current element to the nodes 
-      for (uint a = 0; a < elements[e]->nodeIDs.size(); a++) {
+      for (int a = 0; a < elements[e]->nodeIDs.size(); a++) {
 	nodes[elements[e]->nodeIDs[a]].sumForces(elementNodes[a]);
       } // for a = ...
 
@@ -237,8 +237,8 @@ public:
       node.force[1] = 0.0;
       node.timeIntegrate(dt);
       // set the nodal velocity consistent with the rigid body velocity
-      node.velocity[0] = velocity[0] - velocity[2]*ry;
-      node.velocity[1] = velocity[1] + velocity[2]*rx;
+      node.velocity[0] = velocity[0] - omega*ry;
+      node.velocity[1] = velocity[1] + omega*rx;
     }
 
     // update the center of mass location and the total rotation angle
@@ -251,7 +251,7 @@ public:
   void applyPenaltyBoundaryCondition(Boundary* boundary, float dt) {
     
     // update the nodal positions to satisfy the imposed boundary condition
-    for (uint a = 0; a < nodes.size(); a++) {
+    for (int a = 0; a < nodes.size(); a++) {
       boundary->enforce_penalty(nodes[a], dt);
     } // for a = ...
 

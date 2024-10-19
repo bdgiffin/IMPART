@@ -26,7 +26,7 @@ public:
   void applyForce(MaterialPoint& integrationPoint, std::vector<Node>& elementNodes) {
 
     // sum the nodal force contributions
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       elementNodes[a].force[1] -= gravity * integrationPoint.mass;
     } // a = ...
 
@@ -42,7 +42,7 @@ public:
     
     // compute the interpolated current coordinate
     float x[2] = { 0.0, 0.0 };
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       for (int i = 0; i < 2; i++) {
 	x[i] += elementNodes[a].position[i] * integrationPoint.shapeFunctionValues[a];
       } // i = ...
@@ -55,7 +55,7 @@ public:
     }
 
     // sum the nodal force contributions
-    for (uint a = 0; a < elementNodes.size(); a++) {
+    for (int a = 0; a < elementNodes.size(); a++) {
       elementNodes[a].force[1] += b * integrationPoint.integrationWeight;
     } // a = ...
 
