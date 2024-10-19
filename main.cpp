@@ -24,7 +24,7 @@ const static double VIEW_WIDTH = 1.5*800.f;
 const static double VIEW_HEIGHT = 1.5*600.f;
 
 const static float H = 32.f; // kernel radius
-const static float DT = 0.4f; // integration timestep
+const static float DT = 1.0f; // integration timestep
 
 void InitSTF(void) {
 
@@ -220,12 +220,12 @@ void InitSTF(void) {
   stf.environment.boundaries[3]->conductivity = 0.0;
 
   // create fluid
-  //stf.objects.fluid.Nx = 8;
-  //stf.objects.fluid.Ny = 6;
+  //stf.objects.fluid.Nx = 8*2;
+  //stf.objects.fluid.Ny = 6*2;
   //stf.objects.fluid.dx = VIEW_WIDTH/stf.objects.fluid.Nx;
   //stf.objects.fluid.dy = VIEW_HEIGHT/stf.objects.fluid.Ny;
-  //stf.objects.fluid.density0 = 10.0;
-  //stf.objects.fluid.bulk_modulus = 1.0;
+  //stf.objects.fluid.density0 = 1.0;
+  //stf.objects.fluid.bulk_modulus = 10.0;
   //stf.objects.fluid.viscosity = 1.0;
 
   // initialize
@@ -335,13 +335,13 @@ void Render(void) {
   glEnd();
 
   // not sure what this is? maybe water?
-  glBegin(GL_QUADS);
-  glColor4f(0.5f, 0.4f, 0.0f, 0.5f);
-  glVertex2f(0,0);
-  glVertex2f(VIEW_WIDTH,0);
-  glVertex2f(VIEW_WIDTH,0.0*VIEW_HEIGHT);
-  glVertex2f(0,0.0*VIEW_HEIGHT);
-  glEnd();
+  //glBegin(GL_QUADS);
+  //glColor4f(0.5f, 0.4f, 0.0f, 0.5f);
+  //glVertex2f(0,0);
+  //glVertex2f(VIEW_WIDTH,0);
+  //glVertex2f(VIEW_WIDTH,0.0*VIEW_HEIGHT);
+  //glVertex2f(0,0.0*VIEW_HEIGHT);
+  //glEnd();
 
   /*
   glColor4f(0.25f, 0.1f, 0.1f, 1);

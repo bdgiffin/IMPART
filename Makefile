@@ -38,7 +38,7 @@ $(TARGET): $(OBJS)
 	$(LD) $(LFLAGS) $(OBJS) $(LIBS) -o $(TARGET)
 
 web:
-	emcc main.cpp -s WASM=1 -s LEGACY_GL_EMULATION=1 -lglut -lGLU -lGL -o index.html
+	emcc -O3 -flto=full main.cpp -s WASM=0 -s LEGACY_GL_EMULATION=1 -s GL_FFP_ONLY=1 -o index.html
 
 main.o: main.cpp $(HEADERS)
 	$(CC) $(CFLAGS) -c main.cpp -o main.o
