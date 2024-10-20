@@ -5,6 +5,7 @@
 #include "BodyForce.h"
 #include "Damping.h"
 #include "Boundary.h"
+#include "Radiation.h"
 
 class Environment {
 public:
@@ -25,6 +26,11 @@ public:
     for (int b = 0; b < boundaries.size(); b++) {
       boundaries[b]->initialize();
     } // for b = ...
+
+    // initialize all radiation sources
+    for (int r = 0; r < radiationSources.size(); r++) {
+      radiationSources[r]->initialize();
+    } // for r = ...
 
     // initialize nodal constraint
     nodalConstraint.initialize();
@@ -48,12 +54,18 @@ public:
       boundaries[b]->timeIntegrate(dt);
     } // for b = ...
 
+    // timeIntegrate all radiation sources
+    for (int r = 0; r < radiationSources.size(); r++) {
+      radiationSources[r]->timeIntegrate(dt);
+    } // for r = ...
+
   } // timeIntegrate()
 
   NodalConstraint         nodalConstraint;
   std::vector<BodyForce*> bodyForces;
   std::vector<Damping*>   dampingForces;
   std::vector<Boundary*>  boundaries;
+  std::vector<Radiation*> radiationSources;
 }; // Environment
 
 #endif // ENVIRONMENT_H

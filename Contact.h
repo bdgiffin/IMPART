@@ -5,6 +5,7 @@
 #include<vector>
 #include<limits>
 #include "Node.h"
+#include "Radiation.h"
 
 class Contact {
 public:
@@ -125,6 +126,32 @@ public:
       }
     }
     
+  } // enforce_penalty()
+
+  void apply_heating(Radiation* radiationSource) {
+    // loop over all surface segments
+    for (int i = 0; i < surface.size(); i++) {
+      int node1 = i;
+      int node2 = (i+1) % surface.size();
+      float x0 = 0.5*(surface[node2]->position[0] + surface[node1]->position[0]);
+      float y0 = 0.5*(surface[node2]->position[1] + surface[node1]->position[1]);
+      float dx = surface[node2]->position[0] - surface[node1]->position[0];
+      float dy = surface[node2]->position[1] - surface[node1]->position[1];
+      float nx = +dy;
+      float ny = -dx;
+      float rx = radiationSource->position[0] - x0;
+      float ry = radiationSource->position[1] - y0;
+      float inv_distance = 1.0/(rx*rx + ry*ry);
+      float dirx = rx*inv_distance;
+      float diry = ry*inv_distance;
+      float projected_area = dirx*nx+diry*ny;
+      if (projected_area > 0.0) {
+	const float pi = 3.141592654;
+	float h = radiationSource->heat*projected_area*inv_distance/(2.0*pi);
+	surface[node1]->heating += 0.5*h;
+	surface[node2]->heating += 0.5*h;
+      }
+    }
   } // enforce_penalty()
 
   std::vector<Node*> surface; // closed counter-clockwise cycle of nodes defining the contiguous contact surface

@@ -4,6 +4,7 @@
 #include<vector>
 #include<limits>
 #include "BodyForce.h"
+#include "Radiation.h"
 #include "Damping.h"
 #include "Particle.h"
 #include "Solid.h"
@@ -147,6 +148,15 @@ public:
     } // for c = ...
 
   } // applyContact()
+
+  void applyRadiation(Radiation* radiationSource) {
+
+    // apply radiation to all exposed surfaces
+    for (int c = 0; c < contact_surfaces.size(); c++) {
+      contact_surfaces[c].apply_heating(radiationSource);
+    } // for c = ...
+
+  } // applyRadiation()
 
   // fluid particles
   float radius;

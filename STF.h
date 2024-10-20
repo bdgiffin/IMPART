@@ -42,6 +42,11 @@ public:
       objects.applyPenaltyBoundaryCondition(environment.boundaries[i],dt);
     } // i = ...
 
+    // apply radiation to all objects
+    for (int i = 0; i < environment.radiationSources.size(); i++) {
+      objects.applyRadiation(environment.radiationSources[i]);
+    } // i = ...
+
     // apply contact forces between all objects
     objects.applyContactForces(dt);
 

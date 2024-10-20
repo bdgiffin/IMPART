@@ -20,11 +20,17 @@ int colorPlot = 0;
 // rendering projection parameters
 const static int WINDOW_WIDTH = 800;
 const static int WINDOW_HEIGHT = 600;
-const static double VIEW_WIDTH = 1.5*800.f;
-const static double VIEW_HEIGHT = 1.5*600.f;
+const static float VIEW_WIDTH = 1.5*800.f;
+const static float VIEW_HEIGHT = 1.5*600.f;
 
 const static float H = 32.f; // kernel radius
-const static float DT = 0.6f; // integration timestep
+const static float DT = 0.5f; // integration timestep
+float vis_time = 0.0; // total simuation time
+
+// Define heating settings
+const static float min_heat = 0.0;
+const static float max_heat = 100.0;
+const static float dheat = 20.0;
 
 void InitSTF(void) {
 
@@ -90,7 +96,7 @@ void InitSTF(void) {
   dy = 60/2;
   float R = 6*dx;
   float x0 = 0.1*VIEW_WIDTH;
-  float y0 = 0.1*VIEW_HEIGHT;
+  float y0 = 0.2*VIEW_HEIGHT;
   stf.objects.rigid_bodies[0].nodes.resize(Nx*Ny);
   for (int i = 0; i < Ny; i++) {
     for (int j = 0; j < Nx; j++) {
@@ -127,7 +133,7 @@ void InitSTF(void) {
 
   // create rigid material
   stf.objects.rigid_bodies[0].material.rho = 0.01;
-  stf.objects.rigid_bodies[0].material.alpha = 0.005;
+  stf.objects.rigid_bodies[0].material.alpha = 0.01;
 
   // create contact surfaces
   stf.objects.contact_surfaces.clear();
@@ -176,26 +182,36 @@ void InitSTF(void) {
   damping->y_surface = 0.0*VIEW_HEIGHT;
   stf.environment.dampingForces[0] = damping;
 
+  // create radiation source
+  stf.environment.radiationSources.resize(9);
+  for (int i = 0; i < 9; i++) {
+    stf.environment.radiationSources[i] = new Radiation();
+    stf.environment.radiationSources[i]->position[0] = (0.4 + 0.025*i)*VIEW_WIDTH;
+    stf.environment.radiationSources[i]->position[1] = 0.12*VIEW_HEIGHT;
+  }
+
   // set nodal constraint stiffness and viscosity
   stf.environment.nodalConstraint.stiffness = 50.0;
   stf.environment.nodalConstraint.viscosity = 50.0;
   
   // create boundary
-  stf.environment.boundaries.resize(4);
+  stf.environment.boundaries.resize(5);
   stf.environment.boundaries[0] = new Boundary();
   stf.environment.boundaries[0]->basePoint[0] = 0;
-  stf.environment.boundaries[0]->basePoint[1] = 0;
+  stf.environment.boundaries[0]->basePoint[1] = 0.1*VIEW_HEIGHT;
   stf.environment.boundaries[0]->normal[0] = 0;
   stf.environment.boundaries[0]->normal[1] = 1;
-  stf.environment.boundaries[0]->temperature = 2.0;
+  stf.environment.boundaries[0]->width = VIEW_WIDTH;
+  stf.environment.boundaries[0]->temperature = 0.0;
   stf.environment.boundaries[0]->penalty_stiffness = 100.0;
   stf.environment.boundaries[0]->damping_viscosity = 10.0;
   stf.environment.boundaries[0]->conductivity = 0.01;
   stf.environment.boundaries[1] = new Boundary();
   stf.environment.boundaries[1]->basePoint[0] = 0;
-  stf.environment.boundaries[1]->basePoint[1] = 0;
+  stf.environment.boundaries[1]->basePoint[1] = VIEW_HEIGHT;
   stf.environment.boundaries[1]->normal[0] = 1;
   stf.environment.boundaries[1]->normal[1] = 0;
+  stf.environment.boundaries[1]->width = VIEW_HEIGHT;
   stf.environment.boundaries[1]->temperature = 0.0;
   stf.environment.boundaries[1]->penalty_stiffness = 100.0;
   stf.environment.boundaries[1]->damping_viscosity = 10.0;
@@ -205,19 +221,31 @@ void InitSTF(void) {
   stf.environment.boundaries[2]->basePoint[1] = 0;
   stf.environment.boundaries[2]->normal[0] =-1;
   stf.environment.boundaries[2]->normal[1] = 0;
+  stf.environment.boundaries[2]->width = VIEW_WIDTH;
   stf.environment.boundaries[2]->temperature = 0.0;
   stf.environment.boundaries[2]->penalty_stiffness = 100.0;
   stf.environment.boundaries[2]->damping_viscosity = 10.0;
   stf.environment.boundaries[2]->conductivity = 0.0;
   stf.environment.boundaries[3] = new Boundary();
-  stf.environment.boundaries[3]->basePoint[0] = 0;
+  stf.environment.boundaries[3]->basePoint[0] = VIEW_WIDTH;
   stf.environment.boundaries[3]->basePoint[1] = VIEW_HEIGHT;
   stf.environment.boundaries[3]->normal[0] = 0;
   stf.environment.boundaries[3]->normal[1] =-1;
+  stf.environment.boundaries[3]->width = VIEW_HEIGHT;
   stf.environment.boundaries[3]->temperature = 0.0;
   stf.environment.boundaries[3]->penalty_stiffness = 100.0;
   stf.environment.boundaries[3]->damping_viscosity = 10.0;
   stf.environment.boundaries[3]->conductivity = 0.0;
+  stf.environment.boundaries[4] = new Boundary();
+  stf.environment.boundaries[4]->basePoint[0] = 0.3*VIEW_WIDTH;
+  stf.environment.boundaries[4]->basePoint[1] = 0.2*VIEW_HEIGHT;
+  stf.environment.boundaries[4]->normal[0] = 0;
+  stf.environment.boundaries[4]->normal[1] = 1;
+  stf.environment.boundaries[4]->width = 0.4*VIEW_WIDTH;
+  stf.environment.boundaries[4]->temperature = 0.0;
+  stf.environment.boundaries[4]->penalty_stiffness = 100.0;
+  stf.environment.boundaries[4]->damping_viscosity = 10.0;
+  stf.environment.boundaries[4]->conductivity = 0.0;
 
   // create fluid
   //stf.objects.fluid.Nx = 8*2;
@@ -240,6 +268,7 @@ void Update(void) {
   for (int i = 0; i < Nsubincrements; i++) {
     stf.timeIntegrate(ddt);
   }
+  vis_time += DT;
 
   glutPostRedisplay();
 }
@@ -260,23 +289,73 @@ void Render(void) {
   glOrtho(0, VIEW_WIDTH, 0, VIEW_HEIGHT, 0, 1);
 
   // draw fluid
+  //glBegin(GL_QUADS);
+  //auto& fluid = stf.objects.fluid;
+  //for (int j = 0; j < fluid.Ny; j++) {
+  //  for (int i = 0; i < fluid.Nx; i++) {
+  //    int id = fluid.Nx*j+i;
+  //    float c = 1.0-1.0*(fluid.density[id]/fluid.density0);
+  //    glColor4f(c,c,1.0,0.5);
+  //    glVertex2f(fluid.dx*i,fluid.dy*j);
+  //    glVertex2f(fluid.dx*(i+1),fluid.dy*j);
+  //    glVertex2f(fluid.dx*(i+1),fluid.dy*(j+1));
+  //    glVertex2f(fluid.dx*i,fluid.dy*(j+1));
+  //  }
+  //}
+  //glEnd();
+
+  // draw stove and heating elements
   glBegin(GL_QUADS);
-  auto& fluid = stf.objects.fluid;
-  for (int j = 0; j < fluid.Ny; j++) {
-    for (int i = 0; i < fluid.Nx; i++) {
-      int id = fluid.Nx*j+i;
-      float c = 1.0-1.0*(fluid.density[id]/fluid.density0);
-      glColor4f(c,c,1.0,0.5);
-      glVertex2f(fluid.dx*i,fluid.dy*j);
-      glVertex2f(fluid.dx*(i+1),fluid.dy*j);
-      glVertex2f(fluid.dx*(i+1),fluid.dy*(j+1));
-      glVertex2f(fluid.dx*i,fluid.dy*(j+1));
+  {
+    float rgb[] = { 0.5f,0.5f,0.5f };
+    float bbox[] = { 0.0f, 0.0f, VIEW_WIDTH, 0.1f*VIEW_HEIGHT };
+    glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[1]);
+    glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[1]);
+    glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[3]);
+    glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[3]);
+  }
+  {
+    float rgb[] = { 0.3f,0.3f,0.3f };
+    {
+      float bbox[] = { 0.3f*VIEW_WIDTH, 0.18f*VIEW_HEIGHT, 0.7f*VIEW_WIDTH, 0.2f*VIEW_HEIGHT };
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[1]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[1]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[3]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[3]);
+    }
+    {
+      float bbox[] = { 0.3f*VIEW_WIDTH, 0.1f*VIEW_HEIGHT, 0.32f*VIEW_WIDTH, 0.18f*VIEW_HEIGHT };
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[1]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[1]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[3]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[3]);
+    }
+    {
+      float bbox[] = { 0.68f*VIEW_WIDTH, 0.1f*VIEW_HEIGHT, 0.7f*VIEW_WIDTH, 0.18f*VIEW_HEIGHT };
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[1]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[1]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[3]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[3]);
+    }
+    {
+      float bbox[] = { 0.45f*VIEW_WIDTH, 0.1f*VIEW_HEIGHT, 0.55f*VIEW_WIDTH, 0.12f*VIEW_HEIGHT };
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[1]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[1]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[3]);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[3]);
     }
   }
-  glEnd();
+  {
+    float rgb[] = { 0.4f,0.4f,0.4f };
+    float bbox[] = { 0.4f*VIEW_WIDTH, 0.12f*VIEW_HEIGHT, 0.6f*VIEW_WIDTH, 0.14f*VIEW_HEIGHT };
+    glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[1]);
+    glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[1]);
+    glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[2],bbox[3]);
+    glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(bbox[0],bbox[3]);
+  }
 
   // draw solids
-  glBegin(GL_QUADS);
+  //glBegin(GL_QUADS);
   for (auto &e : stf.objects.solids[0].elements) {
     if (e->active) {
       float nValues[4];
@@ -330,6 +409,28 @@ void Render(void) {
 	glVertex2f(stf.objects.rigid_bodies[0].nodes[i].position[0],
 		   stf.objects.rigid_bodies[0].nodes[i].position[1]);
       }
+    }
+  }
+  for (auto &r : stf.environment.radiationSources) {
+    float x = r->position[0];
+    float y = r->position[1];
+    for (int i = 0; i < 3; i++) {
+      float factor = 10*(3.0-i);
+      float size = factor*r->heat/max_heat;
+      float rgb[3];
+      if (colorPlot == 0) {
+  	rgb[0] = 1.0;
+  	rgb[1] = 1.0-0.02*size;
+  	rgb[2] = 0.0;
+      } else {
+  	thermalColor.getColor(0.1*size,rgb);
+      }
+      float freq = 1.0-0.2*i;
+      float theta = sin(freq*vis_time/DT);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(x+0.1*0.3*theta*size,y-0.3*size);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(x+0.5*size,y+0.1*0.5*theta*size);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(x-0.1*1.0*theta*size,y+1.0*size);
+      glColor4f(rgb[0],rgb[1],rgb[2],1); glVertex2f(x-0.5*size,y-0.1*0.5*theta*size);
     }
   }
   glEnd();
@@ -425,7 +526,7 @@ void Mouse(int button, int state, int x, int y) {
   glutMotionFunc(MoveMouse);
 } // Mouse()
 
-void Keyboard(unsigned char c, __attribute__((unused)) int x, __attribute__((unused)) int y) {   
+void Keyboard(unsigned char c, __attribute__((unused)) int x, __attribute__((unused)) int y) {
   switch(c) {
   case 'r': 
   case 'R':  
@@ -443,6 +544,12 @@ void Keyboard(unsigned char c, __attribute__((unused)) int x, __attribute__((unu
   case 'd':
   case 'D':
     CheckDoneness();
+    break;
+  case '+':
+    for (auto r : stf.environment.radiationSources) r->heat = std::min(max_heat,r->heat+dheat);
+    break;
+  case '-':
+    for (auto r : stf.environment.radiationSources) r->heat = std::max(min_heat,r->heat-dheat);
     break;
   }
 }
