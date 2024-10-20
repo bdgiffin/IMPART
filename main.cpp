@@ -24,7 +24,7 @@ const static double VIEW_WIDTH = 1.5*800.f;
 const static double VIEW_HEIGHT = 1.5*600.f;
 
 const static float H = 32.f; // kernel radius
-const static float DT = 1.0f; // integration timestep
+const static float DT = 0.6f; // integration timestep
 
 void InitSTF(void) {
 
@@ -72,7 +72,7 @@ void InitSTF(void) {
 
   // create material
   stf.objects.solids[0].material.rho = 0.001;
-  stf.objects.solids[0].material.E = 100.0;
+  stf.objects.solids[0].material.E = 60.0;
   stf.objects.solids[0].material.nu = 0.1;
   stf.objects.solids[0].material.dVdT =-0.5;
   stf.objects.solids[0].material.alpha = 0.001;
@@ -234,7 +234,7 @@ void InitSTF(void) {
 }
 
 void Update(void) {
-  int Nsubincrements = 100;
+  int Nsubincrements = 50;
   float ddt = DT / Nsubincrements;
   // use a fixed number of time steps to prevent stalling
   for (int i = 0; i < Nsubincrements; i++) {
