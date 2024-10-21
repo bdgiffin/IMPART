@@ -1,4 +1,4 @@
-# STF (Solid-Thermal-Fluid Library)
+# *IMPULSE* - *I*nteractive *M*ulti-*P*hysics for *U*nstructured *L*agrangian *S*olid *E*lements
 
 This project constitutes an interactive multi-physics simulation engine, created primarily for educational purposes.
 
