@@ -1,0 +1,13 @@
+abstract: <p>Initial release of the IMPART library.</p>
+authors:
+- affiliation: Oklahoma State University
+  family-names: Brian Doran Giffin
+cff-version: 1.2.0
+date-released: '2024-12-02'
+doi: 10.5281/zenodo.14261041
+license:
+- cc-by-4.0
+repository-code: https://github.com/bdgiffin/IMPART/tree/v25.0
+title: 'bdgiffin/IMPART: IMPART v25.0'
+type: software
+version: v25.0
