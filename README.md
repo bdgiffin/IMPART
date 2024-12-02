@@ -1,4 +1,5 @@
 # IMPART - *I*nteractive *M*ulti-*P*hysics *A*nalysis in *R*eal-*T*ime
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14261041.svg)](https://doi.org/10.5281/zenodo.14261041)
 
 **IMPART** is an **I**nteractive **M**ulti-**P**hysics **A**nalysis engine designed to run in **R**eal-**T**ime, created primarily for educational purposes.
 
